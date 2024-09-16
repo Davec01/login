@@ -1,6 +1,6 @@
-// src/app/layout.jsx
-import './globals.css'; // Asegúrate de importar aquí tu archivo de CSS global
 import { Inter } from 'next/font/google';
+import { cn } from '@/lib/utils';
+import './globals.css';
 
 const fontHeading = Inter({
   subsets: ['latin'],
@@ -17,7 +17,7 @@ const fontBody = Inter({
 export default function Layout({ children }) {
   return (
     <html lang="en">
-      <body className={`${fontHeading.variable} ${fontBody.variable} bg-background text-foreground`}>
+      <body className={cn('antialiased', fontHeading.variable, fontBody.variable)}>
         {children}
       </body>
     </html>

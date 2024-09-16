@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
+    "baseUrl": ".", // Asegura que el alias se resuelva desde la raíz del proyecto
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/components/*": ["./components/*"] // Agrega esta línea para incluir la carpeta de componentes
     }
   }
 }
