@@ -1,8 +1,10 @@
 // components/ui/Register.jsx
-"use client"; // Indica que este es un componente del cliente
+"use client";
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { auth } from '../../src/firebaseConfig'; // Asegúrate de importar correctamente la configuración de Firebase
 
 export default function Register() {
   const router = useRouter();
@@ -14,31 +16,15 @@ export default function Register() {
     event.preventDefault();
 
     try {
-      // Realiza la solicitud a FusionAuth
-      const response = await fetch('http://localhost:9011/api/user/registration', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `API-Key ${process.env.NEXT_PUBLIC_FUSIONAUTH_API_KEY}`,
-        },
-        body: JSON.stringify({
-          registration: {
-            applicationId: process.env.NEXT_PUBLIC_FUSIONAUTH_APP_ID,
-            roles: [role],
-          },
-          user: {
-            email: email,
-            password: password,
-          },
-        }),
-      });
+      // Registra al usuario con Firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
-      alert('Registro exitoso, ahora puedes iniciar sesión.');
+      // Enviar correo de verificación
+      await sendEmailVerification(user);
+      alert('Registro exitoso. Se ha enviado un correo de verificación a tu dirección de email.');
+      
+      // Redirigir al usuario a la página de inicio de sesión
       router.push('/');
     } catch (error) {
       console.error('Error al registrar usuario:', error);

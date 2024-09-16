@@ -1,11 +1,15 @@
 // components/ui/Login.jsx
-"use client"; // Indica que este es un componente del cliente
+"use client";
 
 import { Button } from "./Button";
 import { Label } from "./Label";
 import { Input } from "./Input";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+// components/ui/Login.jsx
+import { auth } from '../../src/firebaseConfig'; // Ruta ajustada para llegar a firebaseConfig
+ // Importa la configuración de Firebase
 
 export default function Login() {
   const router = useRouter(); 
@@ -15,28 +19,13 @@ export default function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Aquí envías los datos a FusionAuth
-    const response = await fetch('http://localhost:9011/oauth2/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id: process.env.NEXT_PUBLIC_FUSIONAUTH_CLIENT_ID,
-        client_secret: process.env.NEXT_PUBLIC_FUSIONAUTH_CLIENT_SECRET,
-        grant_type: 'password',
-        username: email,
-        password: password,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (data.access_token) {
-      // Aquí manejas el redireccionamiento después de iniciar sesión correctamente
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Redirige al usuario después de iniciar sesión correctamente
       router.push('/dashboard');
-    } else {
-      // Aquí manejas los errores de autenticación
+    } catch (error) {
+      // Maneja los errores de autenticación
+      console.error('Error al iniciar sesión:', error);
       alert('Error al iniciar sesión');
     }
   };
