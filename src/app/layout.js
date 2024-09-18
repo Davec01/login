@@ -1,6 +1,9 @@
-// src/app/layout.jsx
-import './globals.css'; // Asegúrate de importar aquí tu archivo de CSS global
+// src/app/layout.js
+"use client";
+import './globals.css'; // Importa tu archivo de CSS global
 import { Inter } from 'next/font/google';
+import { Auth0Provider } from '@auth0/auth0-react';
+import { auth0Config } from '../auth0Config'; // Corrige la ruta de importación a un nivel más arriba
 
 const fontHeading = Inter({
   subsets: ['latin'],
@@ -16,10 +19,16 @@ const fontBody = Inter({
 
 export default function Layout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${fontHeading.variable} ${fontBody.variable} bg-background text-foreground`}>
-        {children}
-      </body>
-    </html>
+    <Auth0Provider
+      domain={auth0Config.domain}
+      clientId={auth0Config.clientId}
+      authorizationParams={auth0Config.authorizationParams}
+    >
+      <html lang="en">
+        <body className={`${fontHeading.variable} ${fontBody.variable} bg-background text-foreground`}>
+          {children}
+        </body>
+      </html>
+    </Auth0Provider>
   );
 }

@@ -1,32 +1,50 @@
 // components/ui/Login.jsx
 "use client";
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from "./Button";
 import { Label } from "./Label";
 import { Input } from "./Input";
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-// components/ui/Login.jsx
-import { auth } from '../../src/firebaseConfig'; // Ruta ajustada para llegar a firebaseConfig
- // Importa la configuración de Firebase
 
 export default function Login() {
-  const router = useRouter(); 
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = async (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // Redirige al usuario después de iniciar sesión correctamente
-      router.push('/dashboard');
+      const response = await fetch(`https://${process.env.NEXT_PUBLIC_AUTH0_DOMAIN}/oauth/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          grant_type: 'password',
+          client_id: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID,
+          client_secret: process.env.NEXT_PUBLIC_AUTH0_CLIENT_SECRET,
+          username: email,
+          password: password,
+          scope: 'openid profile email',
+          audience: `https://${process.env.NEXT_PUBLIC_AUTH0_DOMAIN}/api/v2/`,
+          connection: 'Username-Password-Authentication' // Añade esta línea para especificar la conexión
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('access_token', data.access_token);
+        router.push('/dashboard');
+      } else {
+        console.error('Error al iniciar sesión:', data.error, data.error_description);
+        alert('Error al iniciar sesión: ' + data.error_description);
+      }
     } catch (error) {
-      // Maneja los errores de autenticación
-      console.error('Error al iniciar sesión:', error);
-      alert('Error al iniciar sesión');
+      console.error('Error en el inicio de sesión:', error);
+      alert('Error en el inicio de sesión.');
     }
   };
 
@@ -40,14 +58,14 @@ export default function Login() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Entrar</h2>
-            <Button
-              className="text-sm font-semibold border border-gray-300 rounded-md py-1 px-3 hover:bg-gray-100"
+            <Button 
+              className="text-sm font-semibold border border-gray-300 rounded-md py-1 px-3 hover:bg-gray-100" 
               onClick={handleRegisterClick}
             >
               Registro
             </Button>
           </div>
-          <form className="space-y-4" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleLogin}>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 
@@ -67,7 +85,7 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)} 
               />
             </div>
-            <Button className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">
+            <Button type="submit" className="w-full bg-red-500 text-white py-2 rounded-md hover:bg-red-600">
               Entrar
             </Button>
           </form>
