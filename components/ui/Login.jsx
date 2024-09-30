@@ -11,33 +11,46 @@ export default function Login() {
   const router = useRouter(); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState(''); // Estado para manejar el mensaje de error
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    
+    // Limpiar mensaje de error antes de cada intento de login
+    setErrorMessage('');
 
-    // Aquí envías los datos a FusionAuth
-    const response = await fetch('http://localhost:9011/oauth2/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id: process.env.NEXT_PUBLIC_FUSIONAUTH_CLIENT_ID,
-        client_secret: process.env.NEXT_PUBLIC_FUSIONAUTH_CLIENT_SECRET,
-        grant_type: 'password',
-        username: email,
-        password: password,
-      }),
-    });
+    try {
+      // Aquí envías los datos a FusionAuth
+      const response = await fetch('http://localhost:9011/oauth2/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          client_id: process.env.NEXT_PUBLIC_FUSIONAUTH_CLIENT_ID,
+          client_secret: process.env.NEXT_PUBLIC_FUSIONAUTH_CLIENT_SECRET,
+          grant_type: 'password',
+          username: email,
+          password: password,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.access_token) {
-      // Aquí manejas el redireccionamiento después de iniciar sesión correctamente
-      router.push('/dashboard');
-    } else {
-      // Aquí manejas los errores de autenticación
-      alert('Error al iniciar sesión');
+      if (response.ok && data.access_token) {
+        // Redirige al dashboard tras login exitoso
+        router.push('/dashboard');
+      } else {
+        // Muestra un mensaje de error si las credenciales son incorrectas
+        if (data.error_description) {
+          setErrorMessage('El correo o la contraseña son incorrectos.');
+        } else {
+          setErrorMessage('Hubo un error al iniciar sesión. Inténtalo nuevamente.');
+        }
+      }
+    } catch (error) {
+      console.error('Error al intentar iniciar sesión:', error);
+      setErrorMessage('Hubo un error en la conexión. Inténtalo más tarde.');
     }
   };
 
@@ -58,6 +71,9 @@ export default function Login() {
               Registro
             </Button>
           </div>
+          {errorMessage && (
+            <p className="text-red-500 text-center mb-4">{errorMessage}</p> // Muestra el mensaje de error
+          )}
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
