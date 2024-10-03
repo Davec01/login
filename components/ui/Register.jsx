@@ -1,4 +1,4 @@
-"use client"; // Indica que este es un componente del cliente
+"use client";
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -9,7 +9,6 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState(''); // Nuevo campo para confirmar contraseña
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [role, setRole] = useState('Administrador');
   const [errorMessage, setErrorMessage] = useState(''); // Para mostrar mensajes de error
 
   const router = useRouter(); // Usamos el hook useRouter
@@ -39,7 +38,6 @@ export default function Register() {
         body: JSON.stringify({
           registration: {
             applicationId: process.env.NEXT_PUBLIC_FUSIONAUTH_APP_ID,
-            roles: [role],
           },
           user: {
             email: email,
@@ -64,10 +62,10 @@ export default function Register() {
       }
 
       console.log('Registro exitoso', data);
-      // alert('Registro exitoso, ahora puedes iniciar sesión.');
       router.push('/');
     } catch (error) {
       console.error('Error al registrar usuario:', error);
+      setErrorMessage('Ocurrió un error durante el registro.');
     }
   };
 
@@ -132,19 +130,6 @@ export default function Register() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700">Selecciona el Rol</label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="Administrador">Administrador</option>
-              <option value="Contratista">Contratista</option>
-              <option value="Director">Director</option>
-            </select>
           </div>
           <button type="submit" className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-800">
             Continuar
